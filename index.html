@@ -1,120 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gauss-Seidel Calculator</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gauss-Seidel Method Solver</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-hover: #0284c7;
+      --accent: #818cf8;
+      --error-bg: #450a0a;
+      --error-border: #991b1b;
+      --error-text: #fca5a5;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 2rem 1rem; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 1.5rem; }
+
+    header { text-align: center; margin-bottom: 0.5rem; }
+    header h1 { font-size: 2rem; color: var(--primary); font-weight: 700; }
+    header p { color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem; }
+
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
+    
+    .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    input[type="number"] {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 1rem; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="number"]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); }
+
+    .matrix-wrapper { overflow-x: auto; padding-bottom: 0.5rem; }
+    .matrix-grid { display: grid; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
+    .matrix-cell { width: 100%; min-width: 60px; text-align: center; }
+    .matrix-row-label { font-size: 0.85rem; color: var(--accent); font-weight: bold; }
+
+    .btn {
+      background: var(--primary); color: #000; font-weight: 600; padding: 0.75rem 1.5rem;
+      border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s, transform 0.1s; width: 100%;
+    }
+    .btn:hover { background: var(--primary-hover); color: #fff; }
+    .btn:active { transform: scale(0.98); }
+
+    .error-box { background: var(--error-bg); border: 1px solid var(--error-border); color: var(--error-text); padding: 1rem; border-radius: 6px; display: none; font-size: 0.9rem; }
+
+    .results-card { display: none; }
+    .solution-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .solution-box { background: var(--bg); border: 1px solid var(--border); padding: 1rem; border-radius: 8px; text-align: center; }
+    .solution-box .val { font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-top: 0.25rem; }
+
+    details { margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem; }
+    summary { font-weight: 600; cursor: pointer; color: var(--accent); user-select: none; }
+    summary:hover { color: var(--primary); }
+    
+    .console-log {
+      background: #020617; border: 1px solid var(--border); border-radius: 6px; padding: 1rem;
+      margin-top: 1rem; font-family: monospace; font-size: 0.85rem; color: #34d399; max-height: 250px; overflow-y: auto; white-space: pre-wrap;
+    }
+    .console-log .step { border-bottom: 1px dashed #1e293b; padding: 0.4rem 0; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <h1>Gauss-Seidel Calculator</h1>
-            <p class="subtitle">Iterative Method for Solving Linear Equations</p>
-        </header>
 
-        <!-- Main Content -->
-        <div class="content-wrapper">
-            <!-- Input Section -->
-            <section class="input-section">
-                <div class="input-container">
-                    <!-- Matrix A Input -->
-                    <div class="matrix-input-group">
-                        <h2>Matrix A</h2>
-                        <div class="matrix-size-selector">
-                            <label for="matrix-size">Matrix Size (n×n):</label>
-                            <select id="matrix-size">
-                                <option value="2">2×2</option>
-                                <option value="3" selected>3×3</option>
-                                <option value="4">4×4</option>
-                                <option value="5">5×5</option>
-                            </select>
-                        </div>
-                        <div class="matrix-grid" id="matrix-a"></div>
-                    </div>
+<div class="container">
+  <header>
+    <h1>Gauss-Seidel Solver</h1>
+    <p>Iterative Linear Equation System Solver</p>
+  </header>
 
-                    <!-- Vector b Input -->
-                    <div class="matrix-input-group">
-                        <h2>Vector b</h2>
-                        <div class="vector-grid" id="vector-b"></div>
-                    </div>
-
-                    <!-- Initial Guess X0 -->
-                    <div class="matrix-input-group">
-                        <h2>Initial Guess (x₀)</h2>
-                        <div class="vector-grid" id="vector-x0"></div>
-                    </div>
-                </div>
-
-                <!-- Parameters Section -->
-                <div class="parameters-section">
-                    <h2>Parameters</h2>
-                    <div class="param-group">
-                        <label for="tolerance">Tolerance (ε):</label>
-                        <input type="number" id="tolerance" value="0.0001" step="0.00001" min="0">
-                    </div>
-                    <div class="param-group">
-                        <label for="max-iterations">Max Iterations:</label>
-                        <input type="number" id="max-iterations" value="100" step="1" min="1">
-                    </div>
-                    <button id="calculate-btn" class="btn-primary">Calculate</button>
-                </div>
-            </section>
-
-            <!-- Divider -->
-            <div class="divider"></div>
-
-            <!-- Results Section -->
-            <section class="results-section">
-                <!-- Console Output -->
-                <div class="console-section">
-                    <h2>Calculation Console</h2>
-                    <div class="console-output" id="console-output">
-                        <p class="console-placeholder">Console output will appear here...</p>
-                    </div>
-                </div>
-
-                <!-- Iterations Section (Collapsible) -->
-                <div class="iterations-section">
-                    <button class="collapse-btn" id="collapse-iterations-btn">
-                        <span class="collapse-icon">▼</span>
-                        <h2>Iteration Details</h2>
-                    </button>
-                    <div class="iterations-content" id="iterations-content">
-                        <div class="iterations-table-wrapper">
-                            <table class="iterations-table" id="iterations-table">
-                                <thead>
-                                    <tr>
-                                        <th>Iteration</th>
-                                        <th>x values</th>
-                                        <th>Error</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="iterations-tbody">
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Final Solution Section -->
-                <div class="solution-section">
-                    <h2>Final Solution</h2>
-                    <div class="solution-container" id="solution-container">
-                        <p class="solution-placeholder">Solution will appear here after calculation...</p>
-                    </div>
-                </div>
-
-                <!-- Error Message Area -->
-                <div class="error-section" id="error-section"></div>
-            </section>
-        </div>
+  <div class="card">
+    <div class="controls-grid">
+      <div class="input-group">
+        <label for="matrix-size">Dimensions (N × N)</label>
+        <input type="number" id="matrix-size" value="3" min="2" max="6" onchange="buildMatrixInputs()">
+      </div>
+      <div class="input-group">
+        <label for="max-iterations">Max Iterations</label>
+        <input type="number" id="max-iterations" value="50" min="1">
+      </div>
+      <div class="input-group">
+        <label for="tolerance">Tolerance (ε)</label>
+        <input type="number" id="tolerance" value="0.0001" step="0.0001" min="0">
+      </div>
     </div>
 
-    <!-- Overlay for highlighting -->
-    <div class="overlay" id="overlay"></div>
+    <div class="matrix-wrapper">
+      <label>System of Equations [A][X] = [B] & Initial Guess</label>
+      <div id="matrix-container" class="matrix-grid"></div>
+    </div>
 
-    <script src="script.js"></script>
+    <button class="btn" style="margin-top: 1.5rem;" onclick="solveGaussSeidel()">Calculate Solution</button>
+  </div>
+
+  <div id="error-display" class="error-box"></div>
+
+  <div id="results-card" class="card results-card">
+    <h2 style="font-size: 1.2rem; color: var(--text);">Final Converged Solution</h2>
+    <div id="solution-output" class="solution-grid"></div>
+
+    <details>
+      <summary>View Detailed Iteration Console Log</summary>
+      <div id="console-output" class="console-log"></div>
+    </details>
+  </div>
+</div>
+
+<script>
+  function buildMatrixInputs() {
+    const size = parseInt(document.getElementById('matrix-size').value);
+    const container = document.getElementById('matrix-container');
+    container.style.gridTemplateColumns = `repeat(${size + 2}, minmax(60px, 1fr))`;
+    container.innerHTML = '';
+
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        container.innerHTML += `<input type="number" step="any" class="matrix-cell cell-a" data-row="${i}" data-col="${j}" placeholder="a${i+1}${j+1}" value="${i === j ? 4 : 1}">`;
+      }
+      container.innerHTML += `<span class="matrix-row-label">=</span>`;
+      container.innerHTML += `<input type="number" step="any" class="matrix-cell cell-b" data-row="${i}" placeholder="b${i+1}" value="${(i+1)*5}">`;
+    }
+
+    container.innerHTML += `<div style="grid-column: span ${size + 2}; margin-top: 1rem;"><label>Initial Guesses (X₀)</label></div>`;
+    for (let i = 0; i < size; i++) {
+      container.innerHTML += `<input type="number" step="any" class="matrix-cell cell-x0" data-row="${i}" placeholder="x${i+1} initial" value="0">`;
+    }
+  }
+
+  function showError(msg) {
+    const errBox = document.getElementById('error-display');
+    errBox.innerText = msg;
+    errBox.style.display = 'block';
+    document.getElementById('results-card').style.display = 'none';
+  }
+
+  function clearError() {
+    document.getElementById('error-display').style.display = 'none';
+  }
+
+  function solveGaussSeidel() {
+    clearError();
+    const n = parseInt(document.getElementById('matrix-size').value);
+    const maxIter = parseInt(document.getElementById('max-iterations').value);
+    const tol = parseFloat(document.getElementById('tolerance').value);
+
+    let A = Array.from({ length: n }, () => Array(n).fill(0));
+    let B = Array(n).fill(0);
+    let X = Array(n).fill(0);
+
+    // Read values
+    let inputsValid = true;
+    document.querySelectorAll('.cell-a').forEach(el => {
+      const val = parseFloat(el.value);
+      if (isNaN(val)) inputsValid = false;
+      A[parseInt(el.dataset.row)][parseInt(el.dataset.col)] = val;
+    });
+    document.querySelectorAll('.cell-b').forEach(el => {
+      const val = parseFloat(el.value);
+      if (isNaN(val)) inputsValid = false;
+      B[parseInt(el.dataset.row)] = val;
+    });
+    document.querySelectorAll('.cell-x0').forEach(el => {
+      const val = parseFloat(el.value);
+      if (isNaN(val)) inputsValid = false;
+      X[parseInt(el.dataset.row)] = val;
+    });
+
+    if (!inputsValid) return showError("Error: Please make sure all matrix fields contain valid numerical values.");
+
+    // Check zero-diagonals exception
+    for (let i = 0; i < n; i++) {
+      if (A[i][i] === 0) return showError(`Execution Error: Diagonal element A[${i+1}][${i+1}] is zero. Gauss-Seidel involves division by diagonal elements.`);
+    }
+
+    // Check diagonal dominance warning
+    let isDominant = true;
+    for (let i = 0; i < n; i++) {
+      let sum = 0;
+      for (let j = 0; j < n; j++) if (i !== j) sum += Math.abs(A[i][j]);
+      if (Math.abs(A[i][i]) < sum) isDominant = false;
+    }
+
+    const consoleOutput = document.getElementById('console-output');
+    consoleOutput.innerHTML = '';
+    if (!isDominant) {
+      consoleOutput.innerHTML += `<div class="step" style="color: #facc15;">[Warning]: Matrix is not strictly diagonally dominant. The method may not converge.</div>`;
+    }
+
+    // Iteration loop
+    let iter = 0;
+    let converged = false;
+
+    while (iter < maxIter && !converged) {
+      iter++;
+      let maxDiff = 0;
+      let logLine = `<strong>Iteration ${iter}:</strong>\n`;
+
+      for (let i = 0; i < n; i++) {
+        let sum = 0;
+        for (let j = 0; j < n; j++) {
+          if (i !== j) sum += A[i][j] * X[j];
+        }
+        let oldX = X[i];
+        X[i] = (B[i] - sum) / A[i][i];
+        
+        let diff = Math.abs(X[i] - oldX);
+        if (diff > maxDiff) maxDiff = diff;
+
+        logLine += `  x${i+1} = (${B[i]} - ${sum.toFixed(4)}) / ${A[i][i]} = <strong>${X[i].toFixed(6)}</strong> (Δ = ${diff.toFixed(6)})\n`;
+      }
+
+      consoleOutput.innerHTML += `<div class="step">${logLine}</div>`;
+
+      if (maxDiff < tol) {
+        converged = true;
+        consoleOutput.innerHTML += `<div class="step" style="color: #34d399;"><strong>Success: Converged in ${iter} iterations within tolerance ${tol}.</strong></div>`;
+      }
+    }
+
+    if (!converged) {
+      consoleOutput.innerHTML += `<div class="step" style="color: #fca5a5;"><strong>Notice: Reached maximum iterations (${maxIter}) without strictly meeting tolerance.</strong></div>`;
+    }
+
+    // Display Solution
+    const solutionOutput = document.getElementById('solution-output');
+    solutionOutput.innerHTML = '';
+    X.forEach((val, idx) => {
+      solutionOutput.innerHTML += `
+        <div class="solution-box">
+          <label>x${idx + 1}</label>
+          <div class="val">${val.toFixed(6)}</div>
+        </div>`;
+    });
+
+    document.getElementById('results-card').style.display = 'block';
+  }
+
+  // Initialize on load
+  buildMatrixInputs();
+</script>
 </body>
 </html>
