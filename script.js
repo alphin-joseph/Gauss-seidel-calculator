@@ -1,131 +1,192 @@
-function buildMatrixInputs() {
-  const size = parseInt(document.getElementById('matrix-size').value);
-  const container = document.getElementById('matrix-container');
-  container.style.gridTemplateColumns = `repeat(${size + 2}, minmax(60px, 1fr))`;
-  container.innerHTML = '';
+function log(message, success=true){
 
-  for (let i = 0; i < size; i++) {
-    for (let j = 0; j < size; j++) {
-      container.innerHTML += `<input type="number" step="any" class="matrix-cell cell-a" data-row="${i}" data-col="${j}" placeholder="a${i+1}${j+1}" value="${i === j ? 4 : 1}">`;
-    }
-    container.innerHTML += `<span class="matrix-row-label">=</span>`;
-    container.innerHTML += `<input type="number" step="any" class="matrix-cell cell-b" data-row="${i}" placeholder="b${i+1}" value="${(i+1)*5}">`;
-  }
+    const consoleArea =
+    document.getElementById("consoleArea");
 
-  container.innerHTML += `<div style="grid-column: span ${size + 2}; margin-top: 1rem;"><label>Initial Guesses (X₀)</label></div>`;
-  for (let i = 0; i < size; i++) {
-    container.innerHTML += `<input type="number" step="any" class="matrix-cell cell-x0" data-row="${i}" placeholder="x${i+1} initial" value="0">`;
-  }
+    const div = document.createElement("div");
+
+    div.className =
+    success ? "success" : "error";
+
+    div.innerHTML =
+    (success ? "✓ " : "✗ ") + message;
+
+    consoleArea.appendChild(div);
+
+    consoleArea.scrollTop =
+    consoleArea.scrollHeight;
 }
 
-function showError(msg) {
-  const errBox = document.getElementById('error-display');
-  errBox.innerText = msg;
-  errBox.style.display = 'block';
-  document.getElementById('results-card').style.display = 'none';
+function toggleIterations(){
+
+    const area =
+    document.getElementById("iterationsArea");
+
+    area.style.display =
+    area.style.display === "none"
+    ? "block"
+    : "none";
 }
 
-function clearError() {
-  document.getElementById('error-display').style.display = 'none';
+function get(id){
+    return Number(document.getElementById(id).value);
 }
 
-function solveGaussSeidel() {
-  clearError();
-  const n = parseInt(document.getElementById('matrix-size').value);
-  const maxIter = parseInt(document.getElementById('max-iterations').value);
-  const tol = parseFloat(document.getElementById('tolerance').value);
+function solveGaussSeidel(){
 
-  let A = Array.from({ length: n }, () => Array(n).fill(0));
-  let B = Array(n).fill(0);
-  let X = Array(n).fill(0);
+    document.getElementById("consoleArea").innerHTML="";
+    document.getElementById("iterationsArea").innerHTML="";
 
-  // Read inputs
-  let inputsValid = true;
-  document.querySelectorAll('.cell-a').forEach(el => {
-    const val = parseFloat(el.value);
-    if (isNaN(val)) inputsValid = false;
-    A[parseInt(el.dataset.row)][parseInt(el.dataset.col)] = val;
-  });
-  document.querySelectorAll('.cell-b').forEach(el => {
-    const val = parseFloat(el.value);
-    if (isNaN(val)) inputsValid = false;
-    B[parseInt(el.dataset.row)] = val;
-  });
-  document.querySelectorAll('.cell-x0').forEach(el => {
-    const val = parseFloat(el.value);
-    if (isNaN(val)) inputsValid = false;
-    X[parseInt(el.dataset.row)] = val;
-  });
+    const A = [
+        [get("a11"),get("a12"),get("a13")],
+        [get("a21"),get("a22"),get("a23")],
+        [get("a31"),get("a32"),get("a33")]
+    ];
 
-  if (!inputsValid) return showError("Error: Please make sure all matrix fields contain valid numerical values.");
+    const B = [
+        get("b1"),
+        get("b2"),
+        get("b3")
+    ];
 
-  // Exception: Zero diagonal elements
-  for (let i = 0; i < n; i++) {
-    if (A[i][i] === 0) return showError(`Execution Error: Diagonal element A[${i+1}][${i+1}] is zero. Gauss-Seidel involves division by diagonal elements.`);
-  }
+    let x = [
+        get("x1"),
+        get("x2"),
+        get("x3")
+    ];
 
-  // Warning: Diagonal dominance
-  let isDominant = true;
-  for (let i = 0; i < n; i++) {
-    let sum = 0;
-    for (let j = 0; j < n; j++) if (i !== j) sum += Math.abs(A[i][j]);
-    if (Math.abs(A[i][i]) < sum) isDominant = false;
-  }
+    const tol =
+    Number(document.getElementById("tol").value);
 
-  const consoleOutput = document.getElementById('console-output');
-  consoleOutput.innerHTML = '';
-  if (!isDominant) {
-    consoleOutput.innerHTML += `<div class="step" style="color: #facc15;">[Warning]: Matrix is not strictly diagonally dominant. The method may not converge.</div>`;
-  }
+    const maxIter =
+    Number(document.getElementById("maxIter").value);
 
-  // Iteration loop
-  let iter = 0;
-  let converged = false;
+    for(let i=0;i<3;i++){
 
-  while (iter < maxIter && !converged) {
-    iter++;
-    let maxDiff = 0;
-    let logLine = `<strong>Iteration ${iter}:</strong>\n`;
+        for(let j=0;j<3;j++){
 
-    for (let i = 0; i < n; i++) {
-      let sum = 0;
-      for (let j = 0; j < n; j++) {
-        if (i !== j) sum += A[i][j] * X[j];
-      }
-      let oldX = X[i];
-      X[i] = (B[i] - sum) / A[i][i];
-      
-      let diff = Math.abs(X[i] - oldX);
-      if (diff > maxDiff) maxDiff = diff;
+            if(isNaN(A[i][j])){
 
-      logLine += `  x${i+1} = (${B[i]} - ${sum.toFixed(4)}) / ${A[i][i]} = <strong>${X[i].toFixed(6)}</strong> (Δ = ${diff.toFixed(6)})\n`;
+                log("Matrix contains empty values",false);
+                return;
+            }
+        }
     }
 
-    consoleOutput.innerHTML += `<div class="step">${logLine}</div>`;
+    log("Matrix input validated");
 
-    if (maxDiff < tol) {
-      converged = true;
-      consoleOutput.innerHTML += `<div class="step" style="color: #34d399;"><strong>Success: Converged in ${iter} iterations within tolerance ${tol}.</strong></div>`;
+    for(let i=0;i<3;i++){
+
+        if(A[i][i]===0){
+
+            log(
+                `Zero diagonal at row ${i+1}`,
+                false
+            );
+
+            return;
+        }
     }
-  }
 
-  if (!converged) {
-    consoleOutput.innerHTML += `<div class="step" style="color: #fca5a5;"><strong>Notice: Reached maximum iterations (${maxIter}) without meeting tolerance.</strong></div>`;
-  }
+    log("Diagonal entries valid");
 
-  // Render output grid
-  const solutionOutput = document.getElementById('solution-output');
-  solutionOutput.innerHTML = '';
-  X.forEach((val, idx) => {
-    solutionOutput.innerHTML += `
-      <div class="solution-box">
-        <label>x${idx + 1}</label>
-        <div class="val">${val.toFixed(6)}</div>
-      </div>`;
-  });
+    let dominant=true;
 
-  document.getElementById('results-card').style.display = 'block';
+    for(let i=0;i<3;i++){
+
+        let sum=0;
+
+        for(let j=0;j<3;j++){
+
+            if(i!==j)
+                sum += Math.abs(A[i][j]);
+        }
+
+        if(Math.abs(A[i][i]) < sum)
+            dominant=false;
+    }
+
+    if(dominant)
+        log("Matrix is diagonally dominant");
+    else
+        log(
+            "Matrix not diagonally dominant. Convergence not guaranteed",
+            false
+        );
+
+    let converged=false;
+
+    for(let iter=1;iter<=maxIter;iter++){
+
+        const old=[...x];
+
+        x[0]=
+        (B[0]
+        -A[0][1]*x[1]
+        -A[0][2]*x[2])
+        /A[0][0];
+
+        x[1]=
+        (B[1]
+        -A[1][0]*x[0]
+        -A[1][2]*x[2])
+        /A[1][1];
+
+        x[2]=
+        (B[2]
+        -A[2][0]*x[0]
+        -A[2][1]*x[1])
+        /A[2][2];
+
+        const error =
+        Math.max(
+            Math.abs(x[0]-old[0]),
+            Math.abs(x[1]-old[1]),
+            Math.abs(x[2]-old[2])
+        );
+
+        const div =
+        document.createElement("div");
+
+        div.className="iteration";
+
+        div.innerHTML=`
+        <strong>Iteration ${iter}</strong><br>
+        x₁ = ${x[0].toFixed(8)}<br>
+        x₂ = ${x[1].toFixed(8)}<br>
+        x₃ = ${x[2].toFixed(8)}<br>
+        Error = ${error.toExponential(4)}
+        `;
+
+        document
+        .getElementById("iterationsArea")
+        .appendChild(div);
+
+        if(error < tol){
+
+            converged=true;
+
+            log(
+                `Converged in ${iter} iterations`
+            );
+
+            break;
+        }
+    }
+
+    if(!converged){
+
+        log(
+            "Maximum iterations reached",
+            false
+        );
+    }
+
+    document.getElementById(
+        "solution"
+    ).innerHTML = `
+        <strong>x₁</strong> = ${x[0].toFixed(8)}<br>
+        <strong>x₂</strong> = ${x[1].toFixed(8)}<br>
+        <strong>x₃</strong> = ${x[2].toFixed(8)}
+    `;
 }
-
-// Build matrix inputs on page load
-document.addEventListener('DOMContentLoaded', buildMatrixInputs);
