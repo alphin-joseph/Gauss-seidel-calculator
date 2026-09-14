@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gauss-Seidel Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Gauss-Seidel Calculator</h1>
+            <p class="subtitle">Iterative Method for Solving Linear Equations</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="content-wrapper">
+            <!-- Input Section -->
+            <section class="input-section">
+                <div class="input-container">
+                    <!-- Matrix A Input -->
+                    <div class="matrix-input-group">
+                        <h2>Matrix A</h2>
+                        <div class="matrix-size-selector">
+                            <label for="matrix-size">Matrix Size (n×n):</label>
+                            <select id="matrix-size">
+                                <option value="2">2×2</option>
+                                <option value="3" selected>3×3</option>
+                                <option value="4">4×4</option>
+                                <option value="5">5×5</option>
+                            </select>
+                        </div>
+                        <div class="matrix-grid" id="matrix-a"></div>
+                    </div>
+
+                    <!-- Vector b Input -->
+                    <div class="matrix-input-group">
+                        <h2>Vector b</h2>
+                        <div class="vector-grid" id="vector-b"></div>
+                    </div>
+
+                    <!-- Initial Guess X0 -->
+                    <div class="matrix-input-group">
+                        <h2>Initial Guess (x₀)</h2>
+                        <div class="vector-grid" id="vector-x0"></div>
+                    </div>
+                </div>
+
+                <!-- Parameters Section -->
+                <div class="parameters-section">
+                    <h2>Parameters</h2>
+                    <div class="param-group">
+                        <label for="tolerance">Tolerance (ε):</label>
+                        <input type="number" id="tolerance" value="0.0001" step="0.00001" min="0">
+                    </div>
+                    <div class="param-group">
+                        <label for="max-iterations">Max Iterations:</label>
+                        <input type="number" id="max-iterations" value="100" step="1" min="1">
+                    </div>
+                    <button id="calculate-btn" class="btn-primary">Calculate</button>
+                </div>
+            </section>
+
+            <!-- Divider -->
+            <div class="divider"></div>
+
+            <!-- Results Section -->
+            <section class="results-section">
+                <!-- Console Output -->
+                <div class="console-section">
+                    <h2>Calculation Console</h2>
+                    <div class="console-output" id="console-output">
+                        <p class="console-placeholder">Console output will appear here...</p>
+                    </div>
+                </div>
+
+                <!-- Iterations Section (Collapsible) -->
+                <div class="iterations-section">
+                    <button class="collapse-btn" id="collapse-iterations-btn">
+                        <span class="collapse-icon">▼</span>
+                        <h2>Iteration Details</h2>
+                    </button>
+                    <div class="iterations-content" id="iterations-content">
+                        <div class="iterations-table-wrapper">
+                            <table class="iterations-table" id="iterations-table">
+                                <thead>
+                                    <tr>
+                                        <th>Iteration</th>
+                                        <th>x values</th>
+                                        <th>Error</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="iterations-tbody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Final Solution Section -->
+                <div class="solution-section">
+                    <h2>Final Solution</h2>
+                    <div class="solution-container" id="solution-container">
+                        <p class="solution-placeholder">Solution will appear here after calculation...</p>
+                    </div>
+                </div>
+
+                <!-- Error Message Area -->
+                <div class="error-section" id="error-section"></div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Overlay for highlighting -->
+    <div class="overlay" id="overlay"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
