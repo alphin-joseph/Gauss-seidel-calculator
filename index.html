@@ -1,54 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gauss-Seidel Method Solver</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3×3 Gauss-Seidel Calculator</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-  <header>
-    <h1>Gauss-Seidel Solver</h1>
-    <p>Iterative Linear Equation System Solver</p>
-  </header>
 
-  <div class="card">
-    <div class="controls-grid">
-      <div class="input-group">
-        <label for="matrix-size">Dimensions (N × N)</label>
-        <input type="number" id="matrix-size" value="3" min="2" max="6" onchange="buildMatrixInputs()">
-      </div>
-      <div class="input-group">
-        <label for="max-iterations">Max Iterations</label>
-        <input type="number" id="max-iterations" value="50" min="1">
-      </div>
-      <div class="input-group">
-        <label for="tolerance">Tolerance (ε)</label>
-        <input type="number" id="tolerance" value="0.0001" step="0.0001" min="0">
-      </div>
+    <h1>3×3 Gauss-Seidel Calculator</h1>
+
+    <div class="card">
+
+        <h2>Matrix A</h2>
+
+        <div class="matrix">
+            <input id="a11" type="number">
+            <input id="a12" type="number">
+            <input id="a13" type="number">
+
+            <input id="a21" type="number">
+            <input id="a22" type="number">
+            <input id="a23" type="number">
+
+            <input id="a31" type="number">
+            <input id="a32" type="number">
+            <input id="a33" type="number">
+        </div>
+
+        <h2>Vector B</h2>
+
+        <div class="vector">
+            <input id="b1" type="number">
+            <input id="b2" type="number">
+            <input id="b3" type="number">
+        </div>
+
+        <h2>Initial Guess X₀</h2>
+
+        <div class="vector">
+            <input id="x1" type="number" value="0">
+            <input id="x2" type="number" value="0">
+            <input id="x3" type="number" value="0">
+        </div>
+
+        <div class="settings">
+
+            <div>
+                <label>Tolerance</label>
+                <input id="tol" type="number" value="0.0001" step="0.0001">
+            </div>
+
+            <div>
+                <label>Max Iterations</label>
+                <input id="maxIter" type="number" value="50">
+            </div>
+
+        </div>
+
+        <button onclick="solveGaussSeidel()">
+            Calculate
+        </button>
+
     </div>
 
-    <div class="matrix-wrapper">
-      <label>System of Equations [A][X] = [B] & Initial Guess</label>
-      <div id="matrix-container" class="matrix-grid"></div>
+    <div class="card">
+
+        <h2>Calculation Console</h2>
+
+        <div id="consoleArea" class="console"></div>
+
     </div>
 
-    <button class="btn" style="margin-top: 1.5rem;" onclick="solveGaussSeidel()">Calculate Solution</button>
-  </div>
+    <div class="card">
 
-  <div id="error-display" class="error-box"></div>
+        <button class="collapseBtn" onclick="toggleIterations()">
+            Show / Hide Iterations
+        </button>
 
-  <div id="results-card" class="card results-card">
-    <h2 style="font-size: 1.2rem; color: var(--text);">Final Converged Solution</h2>
-    <div id="solution-output" class="solution-grid"></div>
+        <div id="iterationsArea" class="iterations"></div>
 
-    <details>
-      <summary>View Detailed Iteration Console Log</summary>
-      <div id="console-output" class="console-log"></div>
-    </details>
-  </div>
+    </div>
+
+    <div class="card result">
+
+        <h2>Final Solution</h2>
+
+        <div id="solution">
+            Waiting for calculation...
+        </div>
+
+    </div>
+
 </div>
 
 <script src="script.js"></script>
